@@ -1,6 +1,7 @@
 // Imports
 require("dotenv").config();
 
+const fs = require('mz/fs');
 const keys = require("./keys");
 const Spotify = require("node-spotify-api");
 const inquirer = require("inquirer");
@@ -10,6 +11,98 @@ const termLink = require("terminal-link");
 
 const spotify = new Spotify(keys.spotify);
 const omdbKey = `18d13de9`;
+
+// helper function
+const parseInput = str => {
+	// let command = str;
+	// console.log(command);
+	// if(command.inlcudes(",")) {
+	// 	command.replace(/,/g, " ");
+	// }
+	// if(command.includes(`"`) || command.includes(`'`)) {
+	// 	command.replace(/["']/g, "");
+	// }
+
+	if(str.includes(",")) {
+		let command = str;
+		command = command.split(",");
+
+		let query = command.slice(1).join();
+
+		if(query.includes(`"`) || query.includes(`'`)){
+			query = query.replace(/['"]/g, "");
+			query = query.trim();
+		}
+
+		command = command[0];
+		return [command, query];
+	}
+	
+	let command = str;
+	command = command.split(" ");
+	let query = command.slice(1).join(" ");
+	command = command[0];
+
+	return [command, query];
+};
+
+// function to run commandFunction(query)
+const runCommand = (command, query) => {
+	switch (command) {
+		case "spotify-this-song":
+			if (query) {
+				spotifySearch(query);
+			} else {
+				spotifySearch("The Sign Ace of Base");
+			}
+			break;
+
+		case "movie-this":
+			if (query) {
+				movieSearch(query);
+			} else {
+				movieSearch("Mr. Nobody");
+			}
+			break;
+
+		case "concert-this":
+			if (query) {
+				concertSearch(query);
+			} else {
+				console.log(`You must enter a search query.`);
+				search();
+			}
+			break;
+
+		case "do-what-it-says":
+			doWhat();
+			break;
+
+		default:
+			console.log(`You must enter a command.`);
+			console.log(`Commands are the following:`);
+			console.log(`spotify-this <search query>`);
+			console.log(`concert-this <search query>`);
+			console.log(`movie-this <search query>`);
+			console.log(`do-what-it-says to run a command and query from a file`);
+			search();
+	}
+};
+
+const doWhat = async () => {
+	try {
+		const result = await fs.readFile("./random.txt", 'utf8');
+		console.log(result);
+		let input = parseInput(result);
+
+		let command = input[0];
+		let query = input[1];
+		
+		runCommand(command, query);
+	} catch(error) {
+		console.log(error);
+	}
+}
 
 const spotifySearch = async searchQuery => {
 	try {
@@ -42,11 +135,9 @@ const spotifySearch = async searchQuery => {
 				console.log("-----------------------------------------------");
 			}
 		}
-		search();
 	} catch (error) {
 		console.error(error);
 		console.log(`Response error :( try again.`);
-		search();
 	}
 };
 
@@ -77,12 +168,9 @@ const movieSearch = async searchQuery => {
 		console.log(`Notable Actors: ${actors}`);
 		console.log("-----------------------------------------------");
 
-
-		search();
 	}catch(error) {
 		console.error(error);
 		console.log(`Response error :( try again.`)
-		search();
 	}
 };
 
@@ -110,12 +198,9 @@ const concertSearch = async searchQuery => {
 			console.log(`Date: ${datetime}`);
 		console.log("-----------------------------------------------");
 		}
-		search();
 	} catch (error) {
 		console.error(error);
 		console.log(`Response error :( try again.`);
-
-		search();
 	}
 };
 
@@ -130,45 +215,10 @@ const search = () => {
 		])
 		.then(function(response) {
 			// separating command from query
-			let command = response.command;
-			command = command.split(" ");
-			let query = command.slice(1).join(" ");
-			command = command[0];
-
-			switch (command) {
-				case "spotify-this":
-					if (query) {
-						spotifySearch(query);
-					} else {
-						spotifySearch("The Sign Ace of Base");
-					}
-					break;
-
-				case "movie-this":
-					if(query) {
-						movieSearch(query);
-					} else {
-						movieSearch("Mr. Nobody");
-					}
-					break;
-
-				case "concert-this":
-					if (query) {
-						concertSearch(query);
-					} else {
-						console.log(`You must enter a search query.`);
-						search();
-					}
-					break;
-
-				default:
-					console.log(`You must enter a command.`);
-					console.log(`Commands are the following:`);
-					console.log(`spotify-this <search query>`);
-					console.log(`concert-this <search query>`);
-					console.log(`movie-this <search query>`);
-					search();
-			}
+			const input = parseInput(response.command);
+			const command = input[0];
+			const query = input[1];
+			runCommand(command, query);
 		});
 };
 
