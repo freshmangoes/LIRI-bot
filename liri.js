@@ -17,7 +17,7 @@ const spotifySearch = async searchQuery => {
 			type: `track`,
 			query: searchQuery
 		});
-		// console.log(JSON.stringify(result.tracks, null, 2));
+
 		const items = result.tracks.items;
 		console.log("\n-----------------------------------------------");
 
@@ -53,7 +53,7 @@ const spotifySearch = async searchQuery => {
 const movieSearch = async searchQuery => {
 	const queryURL = `http://www.omdbapi.com/?t=${searchQuery}&apikey=${omdbKey}`;
 	try {
-		console.log("\n-----------------------------------------------");
+		console.log("-----------------------------------------------");
 
 		const response = await axios.get(queryURL);;
 		const data = response.data
@@ -75,7 +75,7 @@ const movieSearch = async searchQuery => {
 		console.log(`Languages: ${language}`);
 		console.log(`Synopsis: ${plot}`);
 		console.log(`Notable Actors: ${actors}`);
-		console.log("\n-----------------------------------------------");
+		console.log("-----------------------------------------------");
 
 
 		search();
@@ -93,11 +93,12 @@ const concertSearch = async searchQuery => {
 		const result = await axios.get(queryURL);
 		// ease of access to relevant nested object
 		const data = result.data;
-		console.log(data);
-		console.log("\n-----------------------------------------------");
+
+		console.log("-----------------------------------------------");
 		for (let i = 0; i < data.length; i++) {
 			const venue = data[i].venue;
-			const datetime = data[i].datetime;
+			let datetime = data[i].datetime;
+			datetime = moment(datetime).format(`MM/DD/YYYY`);
 
 			const name = venue.name;
 			const country = venue.country;
@@ -107,7 +108,7 @@ const concertSearch = async searchQuery => {
 			console.log(`Venue: ${name}`);
 			console.log(`Location: ${city}, ${region}, ${country}`);
 			console.log(`Date: ${datetime}`);
-		console.log("\n-----------------------------------------------");
+		console.log("-----------------------------------------------");
 		}
 		search();
 	} catch (error) {
@@ -134,22 +135,16 @@ const search = () => {
 			let query = command.slice(1).join(" ");
 			command = command[0];
 
-			// console.log(`command:: ${command}\nquery:: ${query}`);
-
 			switch (command) {
 				case "spotify-this":
-					console.log("spotify");
-
 					if (query) {
 						spotifySearch(query);
 					} else {
 						spotifySearch("The Sign Ace of Base");
 					}
-
 					break;
 
 				case "movie-this":
-					console.log("movie");
 					if(query) {
 						movieSearch(query);
 					} else {
@@ -158,7 +153,6 @@ const search = () => {
 					break;
 
 				case "concert-this":
-					console.log("concert");
 					if (query) {
 						concertSearch(query);
 					} else {
@@ -166,6 +160,7 @@ const search = () => {
 						search();
 					}
 					break;
+
 				default:
 					console.log(`You must enter a command.`);
 					console.log(`Commands are the following:`);
