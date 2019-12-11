@@ -1,5 +1,6 @@
 // Imports
 require("dotenv").config();
+
 const keys = require("./keys");
 const Spotify = require("node-spotify-api");
 const inquirer = require("inquirer");
@@ -7,11 +8,8 @@ const axios = require("axios");
 const moment = require("moment");
 const termLink = require("terminal-link");
 
-var spotify = new Spotify(keys.spotify);
-
-// console.log(`Keys:
-//   ${keys.spotify.id}
-//   ${keys.spotify.secret}`);
+const spotify = new Spotify(keys.spotify);
+const omdbKey = `18d13de9`;
 
 const spotifySearch = async searchQuery => {
 	try {
@@ -46,18 +44,77 @@ const spotifySearch = async searchQuery => {
 		}
 		search();
 	} catch (error) {
-		console.log(error);
+		console.error(error);
+		console.log(`Response error :( try again.`);
+		search();
 	}
 };
 
-const bandsInTownSearch = async searchQuery => {
-	var queryURL = `https://rest.bandsintown.com/artists/${searchQuery}/events?app_id=codingbootcamp`;
+const movieSearch = async searchQuery => {
+	const queryURL = `http://www.omdbapi.com/?t=${searchQuery}&apikey=${omdbKey}`;
+	try {
+		console.log("\n-----------------------------------------------");
+
+		const response = await axios.get(queryURL);;
+		const data = response.data
+
+		const title = data.Title;
+		const year = data.Year;
+		const imdbRating = data.Ratings[0].Value;
+		const rottenTomatoesRating = data.Ratings[1].Value;
+		const country = data.Country;
+		const language = data.Language;
+		const plot = data.Plot;
+		const actors = data.Actors;
+
+		console.log(`Title: ${title}`);
+		console.log(`Release year: ${year}`);
+		console.log(`IMDB Rating: ${imdbRating}`);
+		console.log(`Rotten Tomatoes Rating: ${rottenTomatoesRating}`);
+		console.log(`Country Produced: ${country}`);
+		console.log(`Languages: ${language}`);
+		console.log(`Synopsis: ${plot}`);
+		console.log(`Notable Actors: ${actors}`);
+		console.log("\n-----------------------------------------------");
+
+
+		search();
+	}catch(error) {
+		console.error(error);
+		console.log(`Response error :( try again.`)
+		search();
+	}
+};
+
+const concertSearch = async searchQuery => {
+	const queryURL = `https://rest.bandsintown.com/artists/${searchQuery}/events?app_id=codingbootcamp`;
 
 	try {
 		const result = await axios.get(queryURL);
-		console.log(JSON.stringify(result));
+		// ease of access to relevant nested object
+		const data = result.data;
+		console.log(data);
+		console.log("\n-----------------------------------------------");
+		for (let i = 0; i < data.length; i++) {
+			const venue = data[i].venue;
+			const datetime = data[i].datetime;
+
+			const name = venue.name;
+			const country = venue.country;
+			const city = venue.city;
+			const region = venue.region;
+
+			console.log(`Venue: ${name}`);
+			console.log(`Location: ${city}, ${region}, ${country}`);
+			console.log(`Date: ${datetime}`);
+		console.log("\n-----------------------------------------------");
+		}
+		search();
 	} catch (error) {
 		console.error(error);
+		console.log(`Response error :( try again.`);
+
+		search();
 	}
 };
 
@@ -66,19 +123,57 @@ const search = () => {
 		.prompt([
 			{
 				type: "input",
-				message: "Input a Spotify search!",
-				name: "userQuery"
+				message: "Input a command!",
+				name: "command"
 			}
-			// {
-			// 	type: "input",
-			// 	message: "Input a bands in town search!",
-			// 	name: "bandsQuery"
-			// }
 		])
 		.then(function(response) {
-			console.log(`Spotify search!`);
-			spotifySearch(response.userQuery);
-			// search();
+			// separating command from query
+			let command = response.command;
+			command = command.split(" ");
+			let query = command.slice(1).join(" ");
+			command = command[0];
+
+			// console.log(`command:: ${command}\nquery:: ${query}`);
+
+			switch (command) {
+				case "spotify-this":
+					console.log("spotify");
+
+					if (query) {
+						spotifySearch(query);
+					} else {
+						spotifySearch("The Sign Ace of Base");
+					}
+
+					break;
+
+				case "movie-this":
+					console.log("movie");
+					if(query) {
+						movieSearch(query);
+					} else {
+						movieSearch("Mr. Nobody");
+					}
+					break;
+
+				case "concert-this":
+					console.log("concert");
+					if (query) {
+						concertSearch(query);
+					} else {
+						console.log(`You must enter a search query.`);
+						search();
+					}
+					break;
+				default:
+					console.log(`You must enter a command.`);
+					console.log(`Commands are the following:`);
+					console.log(`spotify-this <search query>`);
+					console.log(`concert-this <search query>`);
+					console.log(`movie-this <search query>`);
+					search();
+			}
 		});
 };
 
