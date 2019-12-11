@@ -5,48 +5,81 @@ const Spotify = require("node-spotify-api");
 const inquirer = require("inquirer");
 const axios = require("axios");
 const moment = require("moment");
+const termLink = require("terminal-link");
 
 var spotify = new Spotify(keys.spotify);
-// var userQuery = `The Beatles Don't Let Me Down`
 
-console.log(`Keys: 
-  ${keys.spotify.id}
-  ${keys.spotify.secret}`);
+// console.log(`Keys:
+//   ${keys.spotify.id}
+//   ${keys.spotify.secret}`);
 
-inquirer
-	.prompt([
-		{
-			type: "input",
-			message: "Input a Spotify search!",
-			name: "userQuery"
-		},
-		{
-			type: "confirm",
-			message: "Continue with this search?",
-			name: "confirm",
-			default: true
+const spotifySearch = async searchQuery => {
+	try {
+		const result = await spotify.search({
+			type: `track`,
+			query: searchQuery
+		});
+		// console.log(JSON.stringify(result.tracks, null, 2));
+		const items = result.tracks.items;
+		console.log("\n-----------------------------------------------");
+
+		for (let i = 0; i < items.length; i++) {
+			// variables for ease of access & readability
+			const previewURL = items[i].preview_url;
+			const trackName = items[i].name;
+			const artist = items[i].artists[0].name;
+
+			// With iTerm, will create a clickable link. Command + click "Preview Link"
+			// Otherwise will show as Preview Link (<preview URL>)
+			const previewLink = termLink("Preview Link", previewURL);
+
+			// validating all relevant object fields
+			if (previewURL && trackName && artist) {
+				console.log(
+					`Artist: ${JSON.stringify(artist)}\nTrack: ${JSON.stringify(
+						trackName
+					)}`
+				);
+				console.log(previewLink);
+				console.log("-----------------------------------------------");
+			}
 		}
-	])
-	.then(function(response) {
-		if (response.confirm) {
-      console.log(`Spotify search!`);
-			spotify.search(
-				{
-					type: `track`,
-					query: response.userQuery
-				},
-				function(e, data) {
-					if (e) {
-						return console.log(`Error: ${e}`);
-          }
-          const items = data.tracks.items;
-          console.log("Data:", data);
-          console.log("Name:", JSON.stringify(data.name));
-          for(var i = 0; i < items.length; i++) {
-            const artist = items[i].artists[0].name;
-            console.log(`Item: ${JSON.stringify(items[i].name)} - Artist: ${JSON.stringify(artist)}`);
-          }
-				}
-			);
-		}
-  });
+		search();
+	} catch (error) {
+		console.log(error);
+	}
+};
+
+const bandsInTownSearch = async searchQuery => {
+	var queryURL = `https://rest.bandsintown.com/artists/${searchQuery}/events?app_id=codingbootcamp`;
+
+	try {
+		const result = await axios.get(queryURL);
+		console.log(JSON.stringify(result));
+	} catch (error) {
+		console.error(error);
+	}
+};
+
+const search = () => {
+	inquirer
+		.prompt([
+			{
+				type: "input",
+				message: "Input a Spotify search!",
+				name: "userQuery"
+			}
+			// {
+			// 	type: "input",
+			// 	message: "Input a bands in town search!",
+			// 	name: "bandsQuery"
+			// }
+		])
+		.then(function(response) {
+			console.log(`Spotify search!`);
+			spotifySearch(response.userQuery);
+			// search();
+		});
+};
+
+search();
