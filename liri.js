@@ -1,6 +1,5 @@
 // Imports
 require("dotenv").config();
-
 const fs = require("mz/fs");
 const keys = require("./keys");
 const Spotify = require("node-spotify-api");
@@ -79,7 +78,6 @@ const runCommand = (command, query) => {
 const doWhat = async () => {
 	try {
 		const result = await fs.readFile("./random.txt", "utf8");
-		// console.log(result);
 		let input = parseInput(result);
 
 		let command = input[0];
