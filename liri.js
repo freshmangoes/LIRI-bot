@@ -1,7 +1,7 @@
 // Imports
 require("dotenv").config();
 
-const fs = require('mz/fs');
+const fs = require("mz/fs");
 const keys = require("./keys");
 const Spotify = require("node-spotify-api");
 const inquirer = require("inquirer");
@@ -14,34 +14,17 @@ const omdbKey = `18d13de9`;
 
 // helper function
 const parseInput = str => {
-	// let command = str;
-	// console.log(command);
-	// if(command.inlcudes(",")) {
-	// 	command.replace(/,/g, " ");
-	// }
-	// if(command.includes(`"`) || command.includes(`'`)) {
-	// 	command.replace(/["']/g, "");
-	// }
-
-	if(str.includes(",")) {
-		let command = str;
-		command = command.split(",");
-
-		let query = command.slice(1).join();
-
-		if(query.includes(`"`) || query.includes(`'`)){
-			query = query.replace(/['"]/g, "");
-			query = query.trim();
-		}
-
-		command = command[0];
-		return [command, query];
-	}
-	
 	let command = str;
+
+	if (command.includes(",")) {
+		command = str.replace(/[,]/g, " ");
+	}
+
 	command = command.split(" ");
 	let query = command.slice(1).join(" ");
 	command = command[0];
+
+	console.log(`${command}, ${query}`);
 
 	return [command, query];
 };
@@ -55,6 +38,7 @@ const runCommand = (command, query) => {
 			} else {
 				spotifySearch("The Sign Ace of Base");
 			}
+
 			break;
 
 		case "movie-this":
@@ -63,6 +47,7 @@ const runCommand = (command, query) => {
 			} else {
 				movieSearch("Mr. Nobody");
 			}
+
 			break;
 
 		case "concert-this":
@@ -70,11 +55,12 @@ const runCommand = (command, query) => {
 				concertSearch(query);
 			} else {
 				console.log(`You must enter a search query.`);
-				search();
 			}
+
 			break;
 
-		case "do-what-it-says":
+		case "do":
+			// case "do-what-it-says":
 			doWhat();
 			break;
 
@@ -85,24 +71,25 @@ const runCommand = (command, query) => {
 			console.log(`concert-this <search query>`);
 			console.log(`movie-this <search query>`);
 			console.log(`do-what-it-says to run a command and query from a file`);
-			search();
+			break;
 	}
+	search();
 };
 
 const doWhat = async () => {
 	try {
-		const result = await fs.readFile("./random.txt", 'utf8');
-		console.log(result);
+		const result = await fs.readFile("./random.txt", "utf8");
+		// console.log(result);
 		let input = parseInput(result);
 
 		let command = input[0];
 		let query = input[1];
-		
+
 		runCommand(command, query);
-	} catch(error) {
+	} catch (error) {
 		console.log(error);
 	}
-}
+};
 
 const spotifySearch = async searchQuery => {
 	try {
@@ -146,8 +133,8 @@ const movieSearch = async searchQuery => {
 	try {
 		console.log("-----------------------------------------------");
 
-		const response = await axios.get(queryURL);;
-		const data = response.data
+		const response = await axios.get(queryURL);
+		const data = response.data;
 
 		const title = data.Title;
 		const year = data.Year;
@@ -167,10 +154,9 @@ const movieSearch = async searchQuery => {
 		console.log(`Synopsis: ${plot}`);
 		console.log(`Notable Actors: ${actors}`);
 		console.log("-----------------------------------------------");
-
-	}catch(error) {
+	} catch (error) {
 		console.error(error);
-		console.log(`Response error :( try again.`)
+		console.log(`Response error :( try again.`);
 	}
 };
 
@@ -196,7 +182,7 @@ const concertSearch = async searchQuery => {
 			console.log(`Venue: ${name}`);
 			console.log(`Location: ${city}, ${region}, ${country}`);
 			console.log(`Date: ${datetime}`);
-		console.log("-----------------------------------------------");
+			console.log("-----------------------------------------------");
 		}
 	} catch (error) {
 		console.error(error);
