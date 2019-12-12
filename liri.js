@@ -23,7 +23,7 @@ const parseInput = str => {
 	let query = command.slice(1).join(" ");
 	command = command[0];
 
-	console.log(`${command}, ${query}`);
+	// console.log(`${command}, ${query}`);
 
 	return [command, query];
 };
@@ -58,8 +58,7 @@ const runCommand = (command, query) => {
 
 			break;
 
-		case "do":
-			// case "do-what-it-says":
+		case "do-what-it-says":
 			doWhat();
 			break;
 
