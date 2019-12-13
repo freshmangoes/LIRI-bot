@@ -27,29 +27,29 @@ const parseInput = str => {
 };
 
 // function to run commandFunction(query)
-const runCommand = (command, query) => {
+const runCommand = async (command, query) => {
 	switch (command) {
 		case "spotify-this-song":
 			if (query) {
-				spotifySearch(query);
+				await spotifySearch(query);
 			} else {
-				spotifySearch("The Sign Ace of Base");
+				await spotifySearch("The Sign Ace of Base");
 			}
 
 			break;
 
 		case "movie-this":
 			if (query) {
-				movieSearch(query);
+				await movieSearch(query);
 			} else {
-				movieSearch("Mr. Nobody");
+				await movieSearch("Mr. Nobody");
 			}
 
 			break;
 
 		case "concert-this":
 			if (query) {
-				concertSearch(query);
+				await concertSearch(query);
 			} else {
 				console.log(`You must enter a search query.`);
 			}
@@ -57,7 +57,7 @@ const runCommand = (command, query) => {
 			break;
 
 		case "do-what-it-says":
-			doWhat();
+			await doWhat();
 			break;
 
 		default:
