@@ -185,8 +185,8 @@ const concertSearch = async searchQuery => {
 	}
 };
 
-const search = () => {
-	inquirer
+const search = async () => {
+	let result = await inquirer
 		.prompt([
 			{
 				type: "input",
@@ -196,11 +196,12 @@ const search = () => {
 		])
 		.then(function(response) {
 			// separating command from query
-			const input = parseInput(response.command);
-			const command = input[0];
-			const query = input[1];
-			runCommand(command, query);
+			return response
 		});
+		const input = parseInput(result.command);
+		const command = input[0];
+		const query = input[1];
+		runCommand(command, query);
 };
 
 search();
